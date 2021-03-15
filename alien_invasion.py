@@ -19,14 +19,22 @@ class AlienInvasion:
 
     def run_game(self):
         """开始游戏的主循环"""
-        while True:
-            for event in pygame.event.get():  # 得到一个监听键盘和鼠标事件列表（上一次被调用后发生的所有事件）
-                if event.type == pygame.QUIT:  # 玩家单击游戏窗口的关闭按钮时，将检测到 pygame.QUIT事件
-                    sys.exit()  # 退出游戏
+        while True:  # 通过辅助方法将事务管理与游戏的其他方面（如更新屏幕）分离——重构，使循环变得简单
+            self._check_events()
             # 每次循环时都重绘屏幕
-            self.screen.fill(self.settings.bg_color)  # 颜色，fill()方法用于处理surface，只接受一个实参——一种颜色
-            self.ship.blitme()  # 绘制飞船
-            pygame.display.flip()  # 让最近绘制的屏幕可见
+            self._update_screen()
+
+    def _check_events(self):
+        """响应按键和鼠标事件"""
+        for event in pygame.event.get():  # 得到一个监听键盘和鼠标事件列表（上一次被调用后发生的所有事件）
+            if event.type == pygame.QUIT:  # 玩家单击游戏窗口的关闭按钮时，将检测到 pygame.QUIT事件
+                sys.exit()  # 退出游戏
+
+    def _update_screen(self):
+        """更新屏幕上的图像，并切换到新屏幕"""
+        self.screen.fill(self.settings.bg_color)  # 颜色，fill()方法用于处理surface，只接受一个实参——一种颜色
+        self.ship.blitme()  # 绘制飞船
+        pygame.display.flip()  # 让最近绘制的屏幕可见
 
 
 # 检查特殊变量 __name__，此变量为程序执行时设置。若此文件作为主程序执行，则此变量被设置为'__main__'；若此文件被测试框架导入，则变量将不是'__main__'
