@@ -15,9 +15,6 @@ class AlienInvasion:
         pygame.init()  # 初始化背景设置，让 Pygame 能正常工作
         self.settings = Settings()  # 创建Settings实例并用它来访问设置
         # 创建一个显示窗口。参数是元组，单位为像素，返回对象是surface（屏幕的一部分，用于显示游戏元素,这里表示整个游戏窗口）
-        # self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # 全屏
-        # self.settings.screen_width = self.screen.get_rect().width  # 更新settings中的配置
-        # self.settings.screen_height = self.screen.get_rect().height
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()  # 创建用于存储子弹的编组
@@ -31,6 +28,7 @@ class AlienInvasion:
             self._check_events()
             self.ship.update()
             self._update_bullets()
+            self._update_aliens()
 
             # 每次循环时都重绘屏幕
             self._update_screen()
@@ -96,6 +94,24 @@ class AlienInvasion:
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
         # print(len(self.bullets))
+
+    def _update_aliens(self):
+        """检查是否有外星人位于屏幕边缘，并更新外星人群中所有外星人的位置"""
+        self._check_fleet_edge()
+        self.aliens.update()
+
+    def _check_fleet_edge(self):
+        """有外星人到达边缘时采取相应的措施"""
+        for alien in self.aliens.sprites():
+            if alien.check_edge():
+                self._change_fleet_direction()
+                break
+
+    def _change_fleet_direction(self):
+        """将整群外星人下移，并改变方向"""
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1
 
     def _check_keyup_events(self, event):
         """响应松开"""
