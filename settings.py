@@ -10,9 +10,10 @@ class Settings:
 
         # 飞船设置
         self.ship_speed = 1.5
+        self.ship_limit = 3  # 可用总飞船数目
 
         # 子弹设置
-        self.bullet_speed = 1.0
+        self.bullet_speed = 1.5
         self.bullet_with = 3
         self.bullet_height = 15
         self.bullet_color = (60, 60, 60)
