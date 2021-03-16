@@ -3,6 +3,7 @@ import pygame
 
 from settings import Settings
 from ship import Ship
+from bullet import Bullet
 
 
 class AlienInvasion:
@@ -13,10 +14,12 @@ class AlienInvasion:
         pygame.init()  # 初始化背景设置，让 Pygame 能正常工作
         self.settings = Settings()  # 创建Settings实例并用它来访问设置
         # 创建一个显示窗口。参数是元组，单位为像素，返回对象是surface（屏幕的一部分，用于显示游戏元素,这里表示整个游戏窗口）
-        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # 全屏
-        self.settings.screen_width = self.screen.get_rect().width  # 更新settings中的配置
-        self.settings.screen_height = self.screen.get_rect().height
+        # self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  # 全屏
+        # self.settings.screen_width = self.screen.get_rect().width  # 更新settings中的配置
+        # self.settings.screen_height = self.screen.get_rect().height
+        self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         self.ship = Ship(self)
+        self.bullets = pygame.sprite.Group()  # 创建用于存储子弹的编组
         pygame.display.set_caption("Alien Invasion")
 
     def run_game(self):
@@ -24,6 +27,8 @@ class AlienInvasion:
         while True:  # 通过辅助方法将事务管理与游戏的其他方面（如更新屏幕）分离——重构，使循环变得简单
             self._check_events()
             self.ship.update()
+            self._update_bullets()
+
             # 每次循环时都重绘屏幕
             self._update_screen()
 
@@ -43,9 +48,26 @@ class AlienInvasion:
             self.ship.moving_right = True
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
+        elif event.key == pygame.K_SPACE:
+            self._fire_bullet()
         elif event.key == pygame.K_q:
             sys.exit()
 
+    def _fire_bullet(self):
+        """创建一颗子弹，并将其加入编组bullets中"""
+        if len(self.bullets) < self.settings.bullet_allowed:
+            new_bullet = Bullet(self)  # !! 别忘了传入 ai_game
+            self.bullets.add(new_bullet)
+
+    def _update_bullets(self):
+        """更新子弹的位置并删除消失的子弹"""
+        self.bullets.update()  # 对编组调用update()时，编组自动对其中的每个精灵调用 update()
+
+        # 删除消失的子弹
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
+        # print(len(self.bullets))
 
     def _check_keyup_events(self, event):
         """响应松开"""
@@ -58,6 +80,8 @@ class AlienInvasion:
         """更新屏幕上的图像，并切换到新屏幕"""
         self.screen.fill(self.settings.bg_color)  # 颜色，fill()方法用于处理surface，只接受一个实参——一种颜色
         self.ship.blitme()  # 绘制飞船
+        for bullet in self.bullets.sprites():
+            bullet.draw_bullet()
         pygame.display.flip()  # 让最近绘制的屏幕可见
 
 

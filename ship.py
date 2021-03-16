@@ -1,7 +1,5 @@
 import pygame
 
-from settings import Settings
-
 
 class Ship:
     """管理飞船的类"""
