@@ -4,6 +4,7 @@ import pygame
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from alien import Alien
 
 
 class AlienInvasion:
@@ -20,6 +21,8 @@ class AlienInvasion:
         self.screen = pygame.display.set_mode((self.settings.screen_width, self.settings.screen_height))
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()  # 创建用于存储子弹的编组
+        self.aliens = pygame.sprite.Group()  # 创建用于存储外星人的编组
+        self._create_fleet()
         pygame.display.set_caption("Alien Invasion")
 
     def run_game(self):
@@ -53,6 +56,31 @@ class AlienInvasion:
         elif event.key == pygame.K_q:
             sys.exit()
 
+    def _create_fleet(self):
+        """创建外星人群"""
+        # 创建第一个外星人并计算一行可容纳多少个外星人
+        alien = Alien(self)
+        alien_width = alien.rect.width
+        alien_height = alien.rect.height
+        available_space_x = self.settings.screen_width - alien_width
+        available_space_y = self.settings.screen_height - 3 * alien_height - self.ship.rect.height
+        num_aliens_x = available_space_x // (2 * alien_width)
+        num_aliens_rows = available_space_y // (2 * alien_height)
+
+        # 创建外星人群
+        for row_number in range(num_aliens_rows):
+            for alien_number in range(num_aliens_x):
+                self._create_alien(alien_number, row_number, alien_width, alien_height)
+
+    def _create_alien(self, alien_number, row_number, alien_width, alien_height):
+        """创建一个外星人群"""
+        alien = Alien(self)
+        alien.x = alien_width + alien_number * alien_width * 2
+        alien.y = alien_height + row_number * alien_height * 2
+        alien.rect.x = alien.x
+        alien.rect.y = alien.y
+        self.aliens.add(alien)
+
     def _fire_bullet(self):
         """创建一颗子弹，并将其加入编组bullets中"""
         if len(self.bullets) < self.settings.bullet_allowed:
@@ -82,6 +110,7 @@ class AlienInvasion:
         self.ship.blitme()  # 绘制飞船
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
+        self.aliens.draw(self.screen)
         pygame.display.flip()  # 让最近绘制的屏幕可见
 
 
