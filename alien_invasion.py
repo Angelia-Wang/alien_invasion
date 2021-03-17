@@ -7,6 +7,7 @@ from ship import Ship
 from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
+from button import Button
 
 
 class AlienInvasion:
@@ -22,6 +23,7 @@ class AlienInvasion:
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()  # 创建用于存储子弹的编组
         self.aliens = pygame.sprite.Group()  # 创建用于存储外星人的编组
+        self.play_button = Button(self, "Play")  # 创建 Play 按钮
         self._create_fleet()
         pygame.display.set_caption("Alien Invasion")
 
@@ -46,6 +48,9 @@ class AlienInvasion:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:  # 玩家点击 Play 按钮
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
 
     def _check_keydown_events(self, event):
         """响应按键"""
@@ -140,8 +145,8 @@ class AlienInvasion:
         """飞船被外星人撞到"""
 
         # 将ship_left - 1
+        self.stats.ships_left -= 1
         if self.stats.ships_left > 0:
-            self.stats.ships_left -= 1
 
             # 清空剩余的外星人和子弹
             self.aliens.empty()
@@ -154,7 +159,8 @@ class AlienInvasion:
             # 暂停半秒钟
             sleep(0.5)
         else:
-            self.stats.game_active = False
+            self.stats.game_active = False  # 游戏结束
+            pygame.mouse.set_visible(True)  # 显示隐藏的光标
 
     def _check_aliens_bottom(self):
         """检查是否有外星人到达了屏幕底端"""
@@ -162,6 +168,25 @@ class AlienInvasion:
             if alien.rect.bottom >= self.screen.get_rect().bottom:
                 self._ship_hit()  # 像飞船被撞到一样处理
                 break
+
+    def _check_play_button(self, mouse_pos):
+        """在玩家单击 Play 按钮时开始新游戏"""
+        button_checked = self.play_button.rect.collidepoint(mouse_pos)
+        if button_checked and not self.stats.game_active:  # 防止用户在游戏过程中点击了按钮所在区域时，游戏重新开始
+            # 隐藏鼠标光标
+            pygame.mouse.set_visible(False)
+
+            self.stats.game_active = True
+            # 重置游戏统计信息
+            self.stats.reset_stats()
+
+            # 清空余下的外星人和子弹
+            self.aliens.empty()
+            self.bullets.empty()
+
+            # 创建一群新的外星人，并将飞船放在屏幕底部中央
+            self._create_fleet()
+            self.ship.center_ship()
 
     def _check_keyup_events(self, event):
         """响应松开"""
@@ -177,6 +202,11 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.aliens.draw(self.screen)
+
+        # 如果游戏处于非活动状态，就绘制Play按钮
+        if not self.stats.game_active:
+            self.play_button.draw_button()
+
         pygame.display.flip()  # 让最近绘制的屏幕可见
 
 
