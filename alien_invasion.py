@@ -111,10 +111,11 @@ class AlienInvasion:
         # 检查是否有子弹击中了外星人，若有则删除相应的子弹和外星人
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
 
-        # 若外星人群被消灭，则删除现有的子弹并新建一群外星人
+        # 若外星人群被消灭，则删除现有的子弹并新建一群外星人，并加快游戏的节奏
         if not self.aliens:
             self.bullets.empty()
             self._create_fleet()
+            self.settings.increase_speed()  # !!!!!!!!!!!!!!!!!!!!!
 
     def _update_aliens(self):
         """检查是否有外星人位于屏幕边缘，并更新外星人群中所有外星人的位置"""
@@ -173,6 +174,9 @@ class AlienInvasion:
         """在玩家单击 Play 按钮时开始新游戏"""
         button_checked = self.play_button.rect.collidepoint(mouse_pos)
         if button_checked and not self.stats.game_active:  # 防止用户在游戏过程中点击了按钮所在区域时，游戏重新开始
+            # 重置游戏设置
+            self.settings.initialize_dynamic_settings()  # !!!!!!!!!!!!!!!!!!!!!
+
             # 隐藏鼠标光标
             pygame.mouse.set_visible(False)
 
